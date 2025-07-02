@@ -1,0 +1,103 @@
+---
+title: "Untitled"
+output: html_document
+date: "2025-05-25"
+---
+
+
+```{r}
+vinos <- read.csv("winequality-red.csv")
+summary(vinos$quality)
+variables <- c("quality","volatile.acidity","chlorides","free.sulfur.dioxide","total.sulfur.dioxide","pH","sulphates","alcohol")
+
+x <- sample(1:nrow(vinos), 500)
+pairs(vinos[x, variables],
+      labels = variables,
+      cex.labels = 1.2,
+      font.labels = 2)
+summary(vinos)
+```
+
+
+```{r}
+library(ggplot2)
+vars <- names(vinos)[sapply(vinos, is.numeric)]
+vars <- setdiff(vars, "quality")  # Excluir "quality" del histograma
+
+
+#Histogramas
+for (var in vars) {
+  p <- ggplot(vinos, aes(x = !!sym(var), fill = factor(quality))) +
+    geom_histogram( alpha = 0.6,position = "identity") +
+    labs(title = paste("Histograma de", var),
+         x = var,
+         fill = "Calidad") +
+    theme_minimal()
+  print(p)
+}
+
+#Boxplots
+for (var in vars) {
+  p <- ggplot(vinos, aes(x = !!sym(var))) +
+    geom_boxplot(outlier.colour = "red") +
+    labs(title = paste("Histograma de", var),
+         x = var,
+         fill = "Calidad") +
+    coord_flip()+
+    theme_minimal()
+  print(p)
+}
+
+```
+
+
+
+Si le hago un logistico
+
+```{r}
+variables <- c("fixed.acidity","volatile.acidity","citric.acid","free.sulfur.dioxide","total.sulfur.dioxide","chlorides","sulphates","alcohol")
+options(scipen = 999)
+
+vinos$quality_binario <- ifelse(vinos$quality >= 6, 1,0)
+logit <- glm(vinos$quality_binario ~ ., vinos[,-c(12)], family = binomial(link = "logit"))
+summary(logit)
+logit_2 <- step(logit)
+
+set.seed(1)
+train <- vinos[sample(1:1599,1200),]
+indices_train <- sample(1:1599, 1200)
+test <- vinos[setdiff(1:1599,indices_train),]
+
+summary(logit_2)
+```
+
+
+MATRIZ CONFUSION
+```{r}
+predicciones <- predict(logit_2, newdata = test[,variables])
+#El logit devuelve una probabilidad, por lo que imponemos un umbral
+pred_class <- ifelse(predicciones >= 0.5, 1, 0)
+#Porque toma valores enteros, vamos a redondear los decimales
+confusionMatrix(as.factor(pred_class), as.factor(test$quality_binario))
+```
+
+
+
+
+
+```{r}
+
+library(MVN)
+hz_test <- mvn(data = vinos[,-c(12,13)], mvnTest = "hz")
+hz_test$multivariateNormality
+
+# outlier <- outliers$multivariateOutlier
+# vinos_sin_outliers <- vinos[-as.numeric(outlier$Observation), ]
+
+
+for(var in variables){
+p <- ggplot(vinos_sin_outliers,aes_string(x=var))+
+geom_boxplot(outlier.colour="red", outlier.shape=1,outlier.size=2)+ coord_flip()+labs(title =paste0("Boxplot de ", var) ,x="Values",y="")
+print(p)
+}
+```

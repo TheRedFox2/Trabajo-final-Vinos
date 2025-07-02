@@ -1,0 +1,506 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, es-tabla]{babel}
+\spanishdecimal{.}
+\renewcommand{\familydefault}{\sfdefault}
+
+
+% Matemáticas AMS
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{esvect}
+
+% Otros paquetes
+\usepackage{multirow}
+\usepackage{subcaption} % para figuras y subfiguras (en lugar de subfigure y subfig)
+\usepackage[a4paper]{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{array}
+\usepackage{epstopdf}
+\usepackage[normalem]{ulem}
+\useunder{\uline}{\ul}{}
+\usepackage{caption}
+\usepackage{multicol}
+\usepackage{footnote}
+\usepackage{xcolor}
+\usepackage{url}
+
+
+
+%\setmainfont{Georgia}  
+
+
+\setlength{\parskip}{0.2cm}
+\setlength{\parindent}{0cm}
+\setcounter{tocdepth}{3}
+
+% Comando valor absoluto
+\providecommand{\abs}[1]{\lvert#1\rvert}
+
+% Configuración para tocloft, cargado con protección para evitar el error:
+\makeatletter
+\@ifundefined{c@lofdepth}{}{\let\c@lofdepth\relax}
+\makeatother
+\usepackage{tocloft}
+
+% Personalización tocloft
+\renewcommand{\cftsecleader}{\cftdotfill{\cftdotsep}}
+
+
+
+
+\author{Álvaro Muñoz Ruiz\and Almudena Luque Castro\and María Granero Alarcón}
+\title{Trabajo Final}
+%\date{06/05/2025}
+
+\begin{document}
+
+\maketitle
+\vspace{0.5cm}
+\begin{figure}[H]
+	\centering
+	\includegraphics[scale=0.45]{UGRLogo.png}	
+\end{figure}
+
+\begin{center}
+	\LARGE\bfseries{Estadística Computacional}
+\end{center}
+
+\newpage
+\tableofcontents
+\newpage
+
+\section{Introducción}
+El vino es un producto emblemático tanto cultural como económico de diversas naciones, entre ellas España o Portugal, donde su elaboración cuenta con una larga tradición y una gran influencia a nivel internacional. En particular, la región norte de Portugal destaca por la producción de vinos tintos con características distintivas. Durante el proceso de elaboración y evaluación del vino, se registran diversas variables fisicoquímicas que permiten analizar su composición y determinar su calidad proporcionando una base sólida para estudios orientados a comprender los factores que inciden en la valoración final del producto.
+
+El objetivo principal del análisis es identificar posibles relaciones significativas entre las características fisicoquímicas del vino y su calidad. Este conocimiento puede contribuir a mejorar los procesos de producción, permitiendo a los elaboradores optimizar las propiedades del vino en función de los factores que más inciden en su valoración, o, por otro lado, tratar de abaratar los costes sin reducir la calidad del producto. Además, los modelos estadísticos obtenidos podrían emplearse como herramientas predictivas para estimar la calidad de nuevas muestras a partir de sus parámetros fisicoquímicos. Para ello, se aplicarán técnicas de análisis estadístico en R aprendidas durante el curso, como modelos de regresión lineal múltiple y lineales generalizados (en concreto, se aplicará la regresión logística).
+
+\section{Los datos}
+En este contexto, se pretende analizar un conjunto de datos compuesto por 1599 muestras de vino tinto originarias de la región norte de Portugal. Los datos se encuentran en el fichero \texttt{winequality-red.csv}, disponible en \cite{kaggleVino}. En dicho archivo podemos observar que cada muestra se evalúa en base a once variables fisicoquímicas y una adicional denominada \texttt{quality}, que recoge la valoración de cada muestra. Continuamos la sección mostrando la información que aporta cada variable en la siguiente tabla:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+
+{\small
+\begin{tabular}{l p{10cm}}
+\hline
+\textbf{Variable} & \textbf{Descripción} \\
+\hline
+\texttt{fixed.acidity} & Acidez no volátil (g/L) \\
+\texttt{volatile.acidity} & Concentración de ácidos volátiles (ácido acético) (g/L) \\
+\texttt{citric.acid} & Cantidad de ácido cítrico (g/L) \\
+\texttt{residual.sugar} & Cantidad de azúcar no fermentado tras la fermentación (g/L) \\
+\texttt{chlorides} & Concentración de cloruro de sodio (g/L) \\
+\texttt{free.sulfur.dioxide} & Concentración de moléculas de dióxido de azufre que no están unidas a otros compuestos en el vino (mg/L) \\
+\texttt{total.sulfur.dioxide} & Cantidad total de dióxido de azufre (mg/L) \\
+\texttt{density} & Masa por unidad de volumen del vino (g/cm$^3$) \\
+\texttt{pH} & Describe cuán ácido o básico es un vino en una escala de 0 (muy ácido) a 14 (muy básico) \\
+\texttt{sulphates} & Concentración de sulfato de sodio (g/L) \\
+\texttt{alcohol} & Porcentaje de alcohol por volumen en el vino \\
+\texttt{quality} & Calidad de producto \\
+\hline
+\end{tabular}
+}
+\end{center}
+
+Se observa que las once variables que componen el data frame \texttt{winequality-red} son numéricas. De ellas, las variables \texttt{fixed.acidity}, \texttt{volatile.acidity}, \texttt{citric.acid}, \texttt{residual.sugar}, \texttt{chlorides}, \texttt{free.sulfur.dioxide}, \texttt{total.sulfur.dioxide}, \texttt{density}, \texttt{pH}, \texttt{sulphates} y \texttt{alcohol}, constituyen las propiedades fisicoquímicas de las muestras y la variable \texttt{quality} evaluada en una escala métrica entre 3 (muy mala) y 8 (excelente).
+Por último, cabe señalar que estos datos han servido como objeto de estudio en diversos análisis. Estos  estudios se pueden encontrar en \cite{kaggleVino} en el apartado 'Discussion'.
+
+
+\section{El modelo}
+
+Para el análisis estadístico de los datos de vinos recogidos se ha decidido utilizar los modelos de regresión lineal y de regresión logística. El motivo por el cual se ha decidido usar ambos se debe a la diferente interpretación de resultados que ofrecen, cuya combinación puede resultar rica para obtener conclusiones precisas. Tanto en el caso lineal como en el logístico, los datos a analizar deben cumplir ciertas hipótesis para que el modelo pueda ser aplicado, ya que, en caso opuesto, si bien se puede llegar a errores en el cálculo de los coeficientes, sería más importante el hecho de que estos pierden cierta validez y efectividad. 
+
+Aunque las hipótesis varían dependiendo del modelo, sí que comparten algunas: (i) Independencia de las observaciones entre sí. (ii) Ausencia de multicolinealidad, es decir, que las variables medidas no dependen unas de otras. (iii) Ausencia de valores anómalos, como aquellos valores no medidos (NA) o ''\textit{outliers}'' que hayan de ser eliminados. (iv) Tamaño muestral adecuado. 
+
+
+A los modelos de regresión lineal han de ser sumadas dos hipótesis más: Normalidad de los errores y Homocedasticidad o varianza de los errores constante. 
+
+
+
+
+A continuación y una vez nombradas las hipótesis a seguir, se define el modelo de regresión lineal. Dada $n$ observaciones independientes de una variable aleatoria $Y$, sean $\{Y_1,\dots,Y_n\}$. Estas observaciones siguen entonces un modelo lineal si:
+\begin{equation}
+Y_i = x_{i1}\beta_1 +  x_{i2}\beta_2 + \dots + x_{im}\beta_m+\epsilon_i \hspace{0.3cm} i=1,\dots,n
+\end{equation}
+donde $\beta_1,\dots,\beta_i$ son parámetros desconocidos, $x_{ij}$ valores medidos de la respectiva variable $j$ dada la observación $i$ y $\epsilon_i$ errores aleatorios. De este modo se puede realizar una formulación matricial del modelo tal que:
+\begin{equation}
+\begin{pmatrix}
+Y_1 \\ Y_2 \\ \vdots \\ Y_n
+\end{pmatrix}
+=
+\begin{pmatrix}
+x_{1,1} & x_{1,2} &\cdots & x_{1,m} \\ x_{2,1} &  x_{2,2}  & \cdots  & x_{2,m} \\   \vdots &  \vdots  &  \ddots  & \vdots \\ x_{n,1} &  x_{n,2} &  \cdots &  x_{n,m}
+\end{pmatrix}
+\begin{pmatrix}
+\beta_1 \\ \beta_2 \\ \vdots \\ \beta_n
+\end{pmatrix}
++
+\begin{pmatrix}
+\epsilon_1 \\ \epsilon_2 \\ \vdots \\ \epsilon_n
+\end{pmatrix}
+.
+\end{equation}
+
+Esta ecuación matricial puede escribirse tal que $Y=X\beta +\epsilon$, y la matriz $X$ se conoce como matriz del modelo. Este modelo generalizado se denomina ''\textit{modelo lineal de Gauss-Markov}'' al verificar la condición de error normalizado previamente mencionada: $\epsilon \sim N(0,I_n)$.
+
+Para el caso particular de este estudio, se utilizará el modelo de regresión lineal múltiple, cuya matriz $X$ es de la forma:
+\begin{equation}
+X =
+\begin{pmatrix}
+1 & x_{1,1} &\cdots & x_{1,k} \\ 1 &  x_{2,1}  & \cdots  & x_{2,k} \\   \vdots &  \vdots    & \ddots  & \vdots \\ 1 &  x_{n,1} &  \cdots &  x_{n,k}
+\end{pmatrix}
+\end{equation}
+
+Por lo que el modelo se define entonces como: 
+\begin{equation}
+Y_i=\beta_0+x_{i1}\beta_1+x_{i2}\beta_2+\dots+x_{ik}\beta_k+\epsilon_i
+\end{equation}
+donde los parámetros  $\beta_1,\dots,\beta_i$ son denominados coeficientes de regresión. De ellos pueden surgir interpretaciones sobre la fuerza que tiene cada variable explicativa sobre la respuesta en el modelo.
+
+Por otra parte, los modelos de regresión logística son diferentes, ya que requieren como hipótesis principal que la variable respuesta sea binaria, ya sea nominal u ordinal. Es por ello que en multitud de ocasiones los datos han de ser transformados para satisfacer esta condición. En este modelo se tiene entonces que la variable respuesta sigue una distribución de Bernouilli  tal que $Y_i\sim B(p_i,n_i)$. Para simplificar el desarrollo, supondremos que los niveles de esta variable son $\{0, 1\}$. Es por ello que podemos asumir que, si la variable respuesta depende de las explicativas, se tiene $P(Y = 1) =p(x)$, con $x=(x_1,\dots,x_n)$.
+
+El modelo de regresión logística múltiple se define entonces como:
+\begin{equation}
+    \begin{split}
+        \text{logit}[p(\boldsymbol{x})]=\log \left[\frac{p(\boldsymbol{x})}{1-p(\boldsymbol{x})}\right]=\sum_{i=0}^{p}\beta_i x_i=\boldsymbol{\beta'}\boldsymbol{x}
+    \end{split}
+\end{equation}
+
+De forma que, despejando para $p(x)$:
+\begin{equation}
+    p(\boldsymbol{x})=\frac{\exp(\sum_{i=0}^{p}\beta_i x_i)}{1+\exp{(\sum_{i=0}^{p}\beta_i x_i)}}=\frac{e^{\boldsymbol{\beta' \boldsymbol{x}}}}{1+e^{\boldsymbol{\beta' \boldsymbol{x}}}}
+\end{equation}
+
+Este paso es de elevada importancia, ya que observamos que los términos que acompañan a las variables explicativas son de la forma $e^{\beta_i}$. Se conocen como ''\textit{odds-ratio}'', y representan que, dado el incremento en una unidad de la variable explicativa $x_i$, la probabilidad de éxito ($P(Y=1)$) aumenta en $e^{\beta_i}$ frente a la de fracaso (esto se conoce como razón de probabilidades). De nuevo, estos factores son relevantes de cara a la interpretación del modelo. 
+
+\section{Análisis estadístico}
+
+En primer lugar, realizamos un análisis exploratorio de las variables. 
+Representamos el diagrama de puntos de algunas variables (que posteriormente 
+veremos que son de interés), y hacemos un resumen estadístico de estos. En el diagrama de puntos, visto en \ref{fig:scatterplot} no se aprecian codependencias entre las variables explicativas ni dependencia de ellas con la variable respuesta.
+
+<<echo=FALSE, results="hide", warning=FALSE, comment="",message = FALSE>>=
+vinos <- read.csv("winequality-red.csv")
+library(ggplot2)
+library(ggpubr)
+library(caret)
+variables <- c("quality","volatile.acidity","chlorides","free.sulfur.dioxide","total.sulfur.dioxide","pH","sulphates","alcohol")
+
+@
+
+<<fig.cap="Diagrama de puntos de algunas variables explicativas del problema. \\label{fig:scatterplot}",out.height="4.5in", warning=FALSE, comment="">>=
+summary(vinos$quality)
+#Dado que hay muchos datos, las nubes de puntos apenas son legibles
+#Por ello, se toma una muestra suficientemente grande como para
+#apreciar comportamiento pero a la vez pueda ser visible.
+x <- sample(1:nrow(vinos), 500)
+pairs(vinos[x, variables],
+      labels = variables,
+      cex.labels = 1.2,
+      font.labels = 2)
+@
+
+\begin{table}[H]
+\centering
+\begin{tabular}{l|cccc}
+\hline
+\textbf{Variable} & \textbf{Min} & \textbf{Mediana} & \textbf{Media} & \textbf{Max} \\
+\hline
+\texttt{fixed.acidity} & 4.60 & 7.9 & 8.32 & 15.90 \\
+\texttt{volatile.acidity} & 0.1200 & 0.5200 & 0.5278 & 1.5800 \\
+\texttt{citric.acid} & 0.000 & 0.260 & 0.271 & 1.000 \\
+\texttt{residual.sugar} & 0.900 & 2.200 & 2.539 & 15.500 \\
+\texttt{chlorides} & 0.01200 & 0.07900 & 0.08747 & 0.61100 \\
+\texttt{free.sulfur.dioxide} & 1.00 & 14.00 & 15.87 & 72.00 \\
+\texttt{total.sulfur.dioxide} & 6.00 & 38.00 & 46.47 & 289.00 \\
+\texttt{density} & 0.9901 & 0.9968 & 0.9967 & 1.0037 \\
+\texttt{pH} & 2.740 & 3.310 & 3.311 & 4.010 \\
+\texttt{sulphates} & 0.3300 & 0.6200 & 0.6581 & 2.0000 \\
+\texttt{alcohol} & 8.40 & 10.20 & 10.42 & 14.90 \\
+\texttt{quality} & 3.000 & 6.000 & 5.636 & 8.000 \\
+\hline
+\end{tabular}
+\caption{Resumen estadístico de las variables}
+\end{table}
+
+
+Tras representar el histograma de las once variables que tenemos, observamos que algunas parecen seguir una distribución normal, como por ejemplo, el \texttt{pH}. También respresentamos
+los diagramas de cajas de todas las variables y observamos bastantes valores atípicos, pero
+no merece la pena eliminar sus entradas debido a que no se desvían tanto del resto de datos. Mostramos
+por ejemplo el histograma del \texttt{pH} y  el diagrama del \texttt{alcohol} en \ref{fig:histybox}.
+
+<<fig.cap="Histograma de \\texttt{pH} y boxplot de \\texttt{alcohol}. \\label{fig:histybox}", echo=FALSE, out.height="4in",warning=FALSE, comment="",message=FALSE>>=
+
+vars <- names(vinos)[sapply(vinos, is.numeric)]
+vars <- setdiff(vars, "quality")  # Excluir "quality" del histograma
+
+p1 <- ggplot(vinos, aes(x = pH, fill = factor(quality))) +
+    geom_histogram( alpha = 0.6,position = "identity") +
+    labs(title = paste("Histograma de", "pH"),
+         x = "pH",
+         fill = "Calidad") +
+    theme_minimal()
+
+  p2 <- ggplot(vinos, aes(x = alcohol)) +
+    geom_boxplot(outlier.colour = "red") +
+    labs(title = paste("Diagrama de cajas del", "alcohol"),
+         x = "alcohol",
+         fill = "Calidad") +
+    coord_flip()+
+    theme_minimal()
+
+ggarrange(p1,p2,ncol =2)
+@
+
+
+
+\subsection{Regresión lineal múltiple}
+Nuestro objetivo es predecir la calidad del vino según sus características 
+fisicoquímicas. Para ello proponemos  un modelo de regresión lineal múltiple.
+\begin{equation}
+Y_i = x_{i1}\beta_1 +  x_{i2}\beta_2 + \dots + x_{im}\beta_m+\epsilon_i \hspace{0.3cm} i=1,\dots,n
+\end{equation}
+donde la variable de respuesta Y es la calidad del vino (\texttt{quality}), y como
+variables explicativas, o covariables, se consideran las 11 caracteríticas medidas: \texttt{fixed.acidity}, \texttt{volatile.acidity}, \texttt{citric.acid}, \texttt{residual.sugar}, 
+\texttt{chlorides}, \texttt{free.sulfur.dioxide}, \texttt{total.sulfur.dioxide}, \texttt{density}, \texttt{pH}, \texttt{sulphates} y \texttt{alcohol}.
+
+Ajustamos ahora el modelo de regresión lineal múltiple a las n=1599 observaciones que tenemos de las variables, usando la función lm.
+
+<<echo=FALSE, results="hide">>=
+vinos <- read.csv("winequality-red.csv")
+@
+
+<<>>=
+mod1<-lm(quality~ .,vinos) ; mod1
+@
+
+El resultado nos muestra los coeficientes estimados, a partir de los cuales se obtienen los valores estimados de la calidad de cada vino mediante la siguiente expresión lineal:
+
+\begin{align*}
+\hat{Y_i} = &0.025x_{i1} -1.084x_{i2} -0.183x_{i3} +0.016x_{i4} -1.874x_{i5}  
+          + 0.004x_{i6} -0.003x_{i7} \\ &-17.881x_{i8} -0.413x_{i9} 
+          + 0.916x_{i10}+ 0.2762x_{i11}+21.965
+\end{align*}
+
+
+
+
+Los coeficientes estimados de las covariables no son directamente comparables entre sí, ya que no todas están expresadas en las mismas unidades de medida. Sin embargo, si nos enfocamos en aquellas variables que se miden en g/L —$x_1$, \dots, $x_5$ y $x_{10}$—, podemos afirmar que la covariable con mayor influencia en la calidad del vino es $x_5$ (\texttt{chlorides}), que representa la concentración de cloruro de sodio, ya que presenta el coeficiente de mayor valor absoluto.
+
+Por el contrario, la variable con menor influencia dentro de este grupo sería $x_1$, correspondiente a la acidez no volátil.
+
+Las variables con coeficientes negativos disminuyen la calidad del vino, como es el caso de \texttt{chlorides}, mientras que aquellas con coeficientes positivos la aumentan, como \texttt{alcohol}.
+
+Estudiamos ahora en qué medida las once percepciones de forma conjunta consiguen
+describir la calidad del vino midiendo la bondad del ajuste.
+Obtengamos entonces el coeficiente de determinación, $R^2$.
+
+<<>>=
+summary(mod1)
+@
+
+El coeficiente de regresión multiple es 0.3606, por lo que el ajuste no parece
+ser demasiado bueno. Sospechamos que esto puede deberse a la naturaleza de los 
+datos, ya que \texttt{quality}, nuestra variable de respuesta, es ordinal discreta.
+Justificaremos esto mejor más adelante.
+
+\subsection*{Inferencia sobre el modelo}
+
+\textbf{Contraste de regresión: significación conjunta de las covariables}:
+El estadístico de contraste obtenido es 81.35 y el p-valor asociado es aproximadamente 0. 
+Se rechaza entonces la hipótesis nula y se concluye que el modelo de regresión ajustado es útil y tiene sentido, ya que las covariables consideradas de modo conjunto permiten explicar la calidad de los vinos. Por lo tanto, el modelo tiene suficiente significación a nivel poblacional.
+
+\textbf{Contrastes de significación individual de las variables}:\\
+A continuación, se analiza la influencia individual que cada una de las once percepciones consideradas ejerce sobre la calidad del vino. Se plantean once contrastes de hipótesis, uno por cada variable, en los cuales rechazar la hipótesis nula implica concluir que la percepción correspondiente tiene una influencia significativa en la calidad. Por el contrario, si no se rechaza la hipótesis nula, se concluye que dicha covariable no aporta información relevante y, por tanto, el modelo podría simplificarse eliminándola.
+
+Observando el \textit{summary} vemos que hay 5 variables
+(\texttt{volatile.acidity}, \texttt{chlorides}, \linebreak   \texttt{free.sulfur.dioxide}, \texttt{sulphates} y \texttt{alcohol})
+ que tienen una significación a nivel poblacional del $0\%$.
+Las variables \texttt{free.sulfur.dioxide} y \texttt{pH} tienen un nivel
+del $1\%$, por lo que las seguimos aceptando. Por el contrario rechazamos
+el resto de variables, entre ellas el término independiente.
+
+
+\subsection*{Diagnóstico del modelo}
+
+De momento, se llega a la conclusión de que aunque los datos no tienen
+una fuerte relación lineal entre sí, el modelo parece ser útil, y hay 
+variables que se pueden eliminar para simplificar el modelo.
+
+Pero estas conclusiones se han obtenido apoyándose en contrastes 
+que se han desarrollado bajo fuertes hipótesis. Antes de continuar debemos realizar un 
+análisis diagnóstico que nos permita validar o al menos descartar
+posibles violaciones de tales hipótesis:
+
+
+\subsection*{Homocedasticidad: varianza constante}
+La hipótesis de homocedasticidad implica que los errores del modelo tienen varianza constante.
+
+<<fig.cap="Gráfico \\text{qq-plot} de los datos. \\label{fig:qqplot}",out.height="4in",meesage = FALSE, comment = "", warning=FALSE>>=
+res<-rstandard(mod1)
+
+qqnorm(res)
+@
+<<fig.cap="Gráfico de los residuos ajustados.\\label{fig:residuos}",out.height="4in",meesage = FALSE, comment = "", warning=FALSE>>=
+plot(mod1$fitted.values,res)
+@
+
+La gráfica \ref{fig:qqplot} se acerca a un comportamiento lineal, luego podemos aceptar la hipótesis
+de normalidad. 
+Claramente, observando \ref{fig:residuos}, se aprecia una estructura de bandas decrecientes en el gráfico de los residuos.
+Hay una disminución de la dispersión de los residuos a medida que aumentan los valores
+ajustados. Esto se debe a que la variable de respuesta no es continua, sino
+ordinal discreta. Como los valores posibles de la calidad del vino son enteros,
+el modelo lineal intenta ajustar algo que es inherentemente escalonado, por 
+eso los residuos se alinean en franjas.
+Todo esto nos indica que no se cumple la hipótesis de homocedasticidad, y por lo tanto
+hace que un modelo de regresión lineal no sea el más adecuado.
+
+Aún así el modelo es eficiente, y para comprobarlo lo estudiamos 
+usando una matriz de confusión utilizando una partición del $75\%$
+de los datos para entrenar el modelo y el $25\%$ restante para probarlo.
+
+<<meesage = FALSE, comment = "", warning=FALSE>>=
+#Primero creamos la partición de los datos en train y test.
+set.seed(1)
+train <- vinos[sample(1:1599,1200),]
+indices_train <- sample(1:1599, 1200)
+test <- vinos[setdiff(1:1599,indices_train),]
+
+
+lm_train <- lm(quality ~ .,train[,variables])
+predicciones <- predict(lm_train, newdata = test[,variables])
+pred_class <- round(predicciones)
+#Porque toma valores enteros, vamos a redondear los decimales
+confusionMatrix(as.factor(pred_class), as.factor(test$quality))
+@
+
+Tras calcular la matriz de confusión, vemos que no es capaz de predecir
+vino de calidad 3 y 8 ya que hay pocos de estos.
+Sin embargo, en el 5 acierta 117 y se quivoca 52 y para las calidades 6 y 7 también
+acierta más de lo que falla. Entonces el modelo sí es bueno en cierto modo para 
+discernir vinos de calidad media. El coeficiente de determinación lineal es tan bajo
+porque los errores respecto del 3, 4 y del 8 son muy grandes.
+
+
+\subsection*{Simplificación del modelo}
+Ahora se buscan posibles simplificaciones del modelo considerando solo las 
+variables que realmente suponen una
+contribución significativa a la hora de describir la variable de respuesta.
+
+<< results="hide", warning=FALSE, message=FALSE>>=
+mod2<-step(mod1)
+@
+<<>>=
+summary(mod2)
+@
+
+Este modelo se queda con las variables que suponen una constribución significativa,
+y como se observa, el coeficiente de determinación apenas varía con 
+respecto al del modelo anterior. Esta vez es 0.3595 y la anterior 0.36.
+Las variables usadas en el primer gráfico son con las que se queda este modelo.
+
+Podemos observar que la variable más influyente negativamente es \texttt{chlorides}, ya que
+cada unidad de esta disminuye la calidad del vino en -2.0178. Y la que más
+aumenta la calidad es \texttt{sulphates} con 0.88.
+
+
+\subsection{Regresión logística}
+
+Debido a los resultados obtenidos al no cumplir las hipótesis adecuadas para el modelo de regresión lineal, se decide hacer un modelo de regresión logística. Este modelo es más robusto frente a las hipótesis no cumplidas, por lo que habrá de ser más adecuado. Por tanto, realizamos un tratamiento previo de los datos para aplicar el modelo logit, ya que este funciona exclusivamente en casos en los que la variable respuesta es binaria. Por ello, creamos una nueva variable sobre la calidad asignándole el valor de $1$ si el vino tenía calidad mayor o igual a 6, y $0$ en caso opuesto. De esta forma, este modelo nos ajusta si el vino será bueno o malo, pero no diciendo exactamente qué nivel de calidad tendrá. 
+
+<<echo=FALSE, results = "hide">>=
+
+variables <- c("fixed.acidity","volatile.acidity","citric.acid","free.sulfur.dioxide","total.sulfur.dioxide","chlorides","sulphates","alcohol")
+options(scipen = 999)
+
+vinos$quality_binario <- ifelse(vinos$quality >= 6, 1,0)
+
+set.seed(1)
+train <- vinos[sample(1:1599,1200),]
+indices_train <- sample(1:1599, 1200)
+test <- vinos[setdiff(1:1599,indices_train),]
+@
+
+<<>>=
+logit <- glm(vinos$quality_binario ~ ., vinos[,-c(12)],
+             family = binomial(link = "logit"))
+summary(logit)
+@
+
+Podemos ver que el modelo final siguiendo la regresión logística tendría la forma siguiente:
+
+\begin{align*}
+P(Y=1) = p(x) = &e^{0.14x_{i1}}e^{-3.3x_{i2}}e^{-1.3x_{i3}}e^{0.06x_{i4}}e^{-3.9x_{i5}}e^{0.02x_{i6}}e^{-0.02x_{i7}}\\&e^{-50.9x_{i8}}e^{-0.38x_{i9}}e^{2.8x_{i10}}e^{0.87x_{i11}}e^{42.95}
+\end{align*}
+
+En cuanto a la inferencia sobre el modelo, se observa que las variables \texttt{volatile.acidity}, \texttt{total.sulfur.dioxide}, \texttt{sulphates} y \texttt{alcohol} tienen validez al $0\%$, \texttt{free.sulfur.dioxide} al $0.1\%$, y \texttt{citric.acid} y \texttt{chlorides} al $1\%$. Todas ellas entran en el margen de validez del $5\%$, por lo que tienen representación del modelo a nivel poblacional. El resto de variables no cumple esto, por tanto, no son representativas.
+
+
+Hagamos un ''\textit{step} y veamos que estas son las variables con las que se queda el modelo final.
+
+<< results="hide", warning=FALSE, message=FALSE>>=
+logit_2 <- step(logit)
+@
+
+
+<<>>=
+summary(logit_2)
+@
+
+Sorprendentemente, al hacer el modelo mediante step, aparece la variable \texttt{fixed.acidity} y como representativa con validez del $1\%$, sumada a las nombradas previamente, mientras que desaparece la variable \texttt{pH}, que tenía significación en el modelo lineal pero no en el logístico. 
+
+Debido a esto, podemos observar que la variable más importante a la hora de mejorar la calidad del vino es \texttt{sulphates}, con una odds-ratio de $e^{2.7}=15$, por lo que, en cada incremento unitario de esta variable, la razón de probabilidades (\textit{odds}) de que el vino sea de buena calidad es 15 veces mayor. Le sigue cerca el alcohol, con $e^{0.91}=2.48$. Por otra parte, la variable que afecta de manera negativa con mayor intensidad es \texttt{chlorides}, con la odds-ratio de $e^{-3.5}=0.03$, reduciendo las \textit{odds} de que el vino sea de buena calidad en 0.03 veces. 
+
+
+Probamos de nuevo a ver la matriz de confusión que obtenemos, con el mismo modelo de entrenamiento y prueba previo.
+
+<<>>=
+predicciones <- predict(logit_2, newdata = test[,variables])
+#El logit devuelve una probabilidad, por lo que imponemos un umbral
+pred_class <- ifelse(predicciones >= 0.5, 1, 0)
+confusionMatrix(as.factor(pred_class), as.factor(test$quality_binario))
+@
+
+De esta matriz de confusión se obtienen muy buenos resultados. Por una parte, clasifica de manera correcta a la clase de vino de buena calidad el $86\%$ de las veces, y dada la especificidad del modelo, podremos estar un $68\%$ seguros de que no ha cometido errores. Viendo la matriz, es evidente que el modelo prefiere indicar que un vino es malo cuando no es así, a que un vino malo es bueno. Por lo tanto, con este modelo, si se indica un vino como buena calidad, lo será con un $86\%$ de seguridad.
+
+
+
+
+\section{Conclusiones}
+
+En primer lugar, se comentó el problema planteado referente a la calidad cuantificada del vino, así como el posible interés en un estudio estadístico de este problema, con intención de hallar aquellas posibles variables que afecten tanto de formas positivas como negativas sobre la misma. Para ello, se comenzó explicando los modelos a utilizar, el modelo de regresión lineal y el modelo de regresión logística o ''\textit{logit}'', así como las hipótesis que han de cumplir para su adecuada aplicación.
+
+Posteriormente, se realizó un exhaustivo análisis exploratorio sobre las variables, para comprobar sus escalas, sus posibles distribuciones e incluso la presencia de codependencias. No se observó ninguna codependencia entre variables, y se concluyó mediante técnicas visuales, como pueden ser los histogramas o el ''\textit{qq-plot}'', que las variables explicativas siguen distribuciones normales univariantes. Además, se realizaron diagramas de cajas así como un breve estudio de los posibles ''\textit{outliers}'', pero se decidió por no eliminarlos de los datos, ya que no se consideró necesario dada la cantidad y los valores de sus entradas. 
+
+Es necesario destacar que, tras la realización del primer modelo, se trató de comprobar la hipótesis de homocedasticidad, y esta no se cumple debido al carácter cuasi-categórico de la variable respuesta, ya que su intervalo consiste en los enteros entre 3 y 8, con 3 una baja calidad y 8 una alta. Es por ello que el modelo lineal no llega a ser un buen modelo, al no cumplir una de las hipótesis requeridas para su funcionamiento.
+
+Finalmente, se aplicaron los modelos, comenzando por el de regresión lineal. Se observó que no todas las variables eran significativas a nivel poblacional, por lo que se decidió por simplificar dicho modelo utilizando el método ''\textit{stepwise}'', tomando siete de las once variables explicativas, todas ellas con un nivel de significación por debajo del $5\%$, por lo que son aceptadas. El resultado de este modelo, como ya se predijo, no es especialmente bueno: su coeficiente de correlación es de $0.36$. Aún así, dado que tiene valor a nivel poblacional, nos permitirá conocer aquellas variables que influyen más en la calidad del vino. Se concluye entonces que estas variables son \texttt{chlorides}, influyendo de manera negativa en la calidad del vino, y \texttt{sulphates}, de manera positiva.
+
+Dado el resultado de este modelo, se decidió aplicar el modelo de regresión logística, robusto frente al no cumplimiento de hipótesis como la homocedasticidad. De él se observó, realizando a su vez una simplificación ''\texttt{stepwise}'', que no todas las variables son representativas, escogiendo ocho de las once. De estas ocho variables, seis de ellas aparecen a su vez en el modelo de regresión lineal simplificado. Como resultado,  este modelo presentó una sensibilidad del $86\%$ y una especificidad del $68\%$, por lo que es relativamente bueno. Como conclusión, se notó que las variables influyentes coincidían con las del modelo lineal: \texttt{chlorides} de forma negativa sobre la calidad y tanto \texttt{sulphates} como \texttt{alcohol} de forma positiva.
+
+
+Por último, se concluye que, como modelo, el lineal no representa una buena aplicación para estos datos dada la no homocedasticidad, pero el logístico sí que sería considerado adecuado. Además, se obtienen los mismos resultados en ambos modelos, y es que las variables más influyentes en la calidad final del vino son \texttt{chlorides}, de forma negativa, y \texttt{sulphates}, seguida de \texttt{alcohol}, ambas de manera positiva.
+
+\section{Referencias}
+
+
+\bibliographystyle{ieeetr}
+\nocite*
+\bibliography{referencias}
+
+
+
+
+
+
+\end{document}
